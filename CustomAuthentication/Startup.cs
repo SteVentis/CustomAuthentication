@@ -37,6 +37,23 @@ namespace CustomAuthentication
         {
             //Configure DbContext with SQL
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(ConnectionString));
+            var tokenValidationParameters =  new TokenValidationParameters()
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:Secret"])),
+
+                ValidateIssuer = true,
+                ValidIssuer = Configuration["JWT:Issuer"],
+
+                ValidateAudience = true,
+                ValidAudience = Configuration["JWT:Audience"],
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+
+            };
+
+            services.AddSingleton(tokenValidationParameters);
 
             //Add Identity
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -56,18 +73,7 @@ namespace CustomAuthentication
                 {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:Secret"])),
-
-                        ValidateIssuer = true,
-                        ValidIssuer = Configuration["JWT:Issuer"],
-
-                        ValidateAudience = true,
-                        ValidAudience = Configuration["JWT:Audience"]
-
-                    };
+                    options.TokenValidationParameters = tokenValidationParameters;
                 });
 
             services.AddControllers();

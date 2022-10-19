@@ -10,5 +10,6 @@ namespace CustomAuthentication.Data
         {
 
         }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }
