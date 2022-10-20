@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CustomAuthentication.Data.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomAuthentication.Controllers
 {
+    [Authorize(Roles = UserRoles.Manager)]
     [Route("api/[controller]")]
     [ApiController]
     public class ManagementController : ControllerBase

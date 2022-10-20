@@ -105,6 +105,9 @@ namespace CustomAuthentication
             {
                 endpoints.MapControllers();
             });
+
+            //Seed the database
+            AppDbInitializer.SeedRolesToDb(app).Wait();
         }
     }
 }

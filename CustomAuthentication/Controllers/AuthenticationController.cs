@@ -1,4 +1,5 @@
 ﻿using CustomAuthentication.Data;
+using CustomAuthentication.Data.Helpers;
 using CustomAuthentication.Data.Models;
 using CustomAuthentication.Data.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -63,7 +64,24 @@ namespace CustomAuthentication.Controllers
             };
             var result = await _userManager.CreateAsync(newUser, registerVm.Password);
 
-            if (result.Succeeded) return Ok("User Created");
+            if (result.Succeeded)
+            {
+                //Add User Role
+                switch (registerVm.Role)
+                {
+                    case UserRoles.Manager:
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.Manager);
+                        break;
+                    case UserRoles.Student:
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
+                        break;
+                    default:
+                        break;
+                }
+
+
+                return Ok("User Created");
+            }
 
             return BadRequest("User could not be created");
         }
@@ -135,6 +153,15 @@ namespace CustomAuthentication.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti , Guid.NewGuid().ToString())
             };
+
+            //Add User role claims
+            var userRoles = await _userManager.GetRolesAsync(user);
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+
             var authSigninKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
 
             var token = new JwtSecurityToken(
